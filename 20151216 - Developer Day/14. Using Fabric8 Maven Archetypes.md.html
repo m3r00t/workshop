@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<title>OpenShift 3 Roadshow</title>
+
+<xmp theme="openshift" style="display:none;">
+#**Lab 14: Using Fabric8 tools and Maven archetypes**
+
+The purpose of this lab is to demonstrate building an applications using maven docker targets that are provided by the fabric8 tools into OpenShift.
+
+In this user workflow we perform the following tasks.
+
+1. Develop and builds a maven based docker project on your local machine.
+2. Pushes the built Docker image and OSE3 configurations to a remote OSE3 environment.
+3. Use the fabric8 tools to help deploy and generate configuration for OpenShift.
+
+**Prerequisites**
+
+You need to have a recent version of maven (>3.0) installed and working (it needs to be able to pull java dependencies from the internet).
+
+You need to have a docker client installed.
+
+If you do not have a local docker daemon and registry installed, you need to set an environment variable that points to
+a usable docker registry. See [here](http://fabric8.io/guide/getStarted/local.html) for setup details.
+
+    $ export DOCKER_HOST=tcp://vagrant.f8:2375
+
+The OpenShift docker regsotry needs to be made available for external use. It is recommended that you setup a **secure** registry first, and
+then expose it. For these instructions, please see [Here](https://docs.openshift.com/enterprise/3.1/install_config/install/docker_registry.html#securing-the-registry)
+
+For the purposes of this lab, we will just expose a route for the docker registry (insecure).
+
+As a cluster admin, login to the `default` OpenShift project:
+
+    $ oc project default
+
+Expose a route:
+
+    $ oc expose svc docker-registry
+    route "docker-registry" exposed
+
+Note we are using the default insecure web port `80`
+
+As your normal user, you should now be able to login to the exposed OpenShift docker registry. Be sure to **replace** the name of the
+registry and the username, email with your environments:
+
+    $ docker login -u <your username> -e wkshop@foo.com -p `oc whoami -t` docker-registry-default.apps.foo.com
+    WARNING: login credentials saved in /home/mike/.docker/config.json
+    Login Succeeded
+
+We will use this exposed registry route later in this lab `docker-registry-default.apps.foo.com`
+
+**Create a new project**
+
+Create a new project:
+
+    $ oc new-project fabric8 --display-name="Fabric8 demo project" --description='Fabric8 demo project'
+
+Make a new directory to hold your source code:
+
+    $ mkdir src/foo; cd src/foo;
+
+
+**Create a java project from a maven archetype**
+
+We are going to use the cxf cdi archetype:
+
+    $ mvn archetype:generate -DarchetypeCatalog=http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml
+
+    Choose archetype:
+    1: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-cxf-cdi-archetype (Creates a new CXF JAX-RS using CDI running in a standalone Java Container)
+    2: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-simple-fatjar-archetype (Creates a new Simple standalone Java Container (fat jar))
+    3: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-spring-archetype (Creates a new Camel route using Spring XML in a standalone Java container)
+    4: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-cdi-rest-archetype (Creates a new Camel route using CDI in a standalone Java Container as REST client)
+    5: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-simple-mainclass-archetype (Creates a new Simple standalone Java Container (main class))
+    6: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-cdi-archetype (Creates a new Camel route using CDI in a standalone Java Container)
+    7: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-cdi-http-archetype (Creates a new Camel route using CDI in a standalone Java Container calling the remote camel-servlet quickstart)
+    8: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:karaf-cxf-rest-archetype (Creates a new RESTful WebService Example using JAX-RS)
+    9: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:karaf-camel-rest-sql-archetype (Creates a new Camel Example using Rest DSL with SQL Database)
+    10: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:karaf-camel-log-archetype (Creates a new Camel Log Example)
+    11: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:spring-boot-camel-archetype (Creates a new Shows how to use Camel with Spring Boot in the Java Container)
+
+Select `1`, hit enter. Fill in properties for your java project. Any values will do.
+
+    Define value for property 'groupId': : com.example
+    Define value for property 'artifactId': : foo
+    Define value for property 'version':  1.0-SNAPSHOT: : latest
+    Define value for property 'package':  com.example: :
+    [INFO] Using property: fabric8.version = 2.2.0.redhat-621030
+    Confirm properties configuration:
+    groupId: com.example
+    artifactId: foo
+    version: latest
+    package: com.example
+    fabric8.version: 2.2.0.redhat-621030
+
+Select `Y`, hit enter.
+
+     Y: : Y
+    [INFO] ----------------------------------------------------------------------------
+    [INFO] Using following parameters for creating project from Archetype: java-cxf-cdi-archetype:2.2.0.redhat-621030
+    [INFO] ----------------------------------------------------------------------------
+    [INFO] Parameter: groupId, Value: com.example
+    [INFO] Parameter: artifactId, Value: foo
+    [INFO] Parameter: version, Value: latest
+    [INFO] Parameter: package, Value: com.example
+    [INFO] Parameter: packageInPathFormat, Value: com/example
+    [INFO] Parameter: package, Value: com.example
+    [INFO] Parameter: version, Value: latest
+    [INFO] Parameter: fabric8.version, Value: 2.2.0.redhat-621030
+    [INFO] Parameter: groupId, Value: com.example
+    [INFO] Parameter: artifactId, Value: foo
+    [INFO] project created from Archetype in dir: /home/mike/src/fuse-ose3-dr1/test2/foo
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 04:26 min
+    [INFO] Finished at: 2015-11-19T21:10:09+13:00
+    [INFO] Final Memory: 17M/237M
+    [INFO] ------------------------------------------------------------------------
+
+You should see `BUILD SUCCESS` and generated stub code:
+
+    $ cd foo
+    $ ls
+    pom.xml  README.md  src/
+
+
+**Build the docker image**
+
+    mvn install docker:build -Pfabric8-snapshot -U -DskipTests=true
+
+A successful build will deploy the built image to your docker registry:
+
+    ...
+    [INFO] Copying files to /home/mike/src/fuse-ose3-dr1/test2/foo/target/docker/docker.io/fabric8/foo/latest/build/maven
+    [INFO] Building tar: /home/mike/src/fuse-ose3-dr1/test2/foo/target/docker/docker.io/fabric8/foo/latest/tmp/docker-build.tar
+    [INFO] DOCKER> [docker.io/fabric8/foo:latest] : Built image f13beae4cc9b
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 01:00 min
+    [INFO] Finished at: 2015-11-19T22:00:12+13:00
+    [INFO] Final Memory: 66M/429M
+    [INFO] ------------------------------------------------------------------------
+
+You can query the docker registry to see your built image:
+
+    $ docker images docker.io/fabric8/foo
+    REPOSITORY              TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+    docker.io/fabric8/foo   latest              f13beae4cc9b        30 seconds ago      518 MB
+
+
+**Push the built docker image**
+
+We are now going to push the built docker image from our build registry into OpenShift's docker registry.
+
+We first have to tag the image so that it matches the expected repository and target namespace
+
+    $ docker tag docker.io/fabric8/foo docker-registry-default.apps.foo.com/fabric8/foo
+
+Note that the `fabric8` piece matches the OpenShift project namespace and `docker-registry-default.apps.foo.com` matches the
+exposed docker registry.
+
+We can now invoke the maven target to push the image. We use out `oc` credentials that are setup when we `oc login`
+
+    $ mvn install docker:push -Pfabric8-snapshot -U -DskipTests=true  -Dfabric8.dockerUser="fabric8/" -Dfabric8.dockerPrefix="docker-registry-default.apps.foo.com/" -Ddocker.username=$(oc whoami) -Ddocker.password=$(oc whoami -t)
+
+A successful push looks like this:
+
+    [INFO] DOCKER> ... d184f07ac6fc
+    [INFO] DOCKER> ... 78af4453742e
+    [INFO] DOCKER> ... 1cfae6b9e8a6
+    [INFO] DOCKER> ... 03e674a993ba
+    [INFO] DOCKER> ... 7322fbe74aa5
+    [INFO] DOCKER> ... c852f6d61e65
+    [INFO] DOCKER> ... f1b10cd84249
+    [INFO] DOCKER> ... latest: digest: sha256:bbc3a41b5ad53bc43dca4fcecb4839380d6c72bdc2d351dfccadbfc0051b30fa size: 54367
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 13.778 s
+    [INFO] Finished at: 2015-11-19T22:02:35+13:00
+    [INFO] Final Memory: 46M/462M
+    [INFO] ------------------------------------------------------------------------
+
+
+**Check ImageStream**
+
+We should be able to use the CLI to check the pushed imagestream
+
+    $ oc get is -n fabric8
+    NAME      DOCKER REPO                       TAGS                  UPDATED
+    foo       172.30.234.236:5000/fabric8/foo   latest,1.0-SNAPSHOT   5 minutes ago
+
+
+**Get OpenShift to start a pod**
+
+To have OpenShift start a pod using the created Docker image we use the following command to generate the json configuration:
+
+    $ mvn -Pfabric8-snapshot fabric8:json -Dfabric8.dockerPrefix="172.30.234.236:5000/"
+
+Note that we need to change the `dockerPrefix` to match the ImageStream (i.e. the internal ip.address, not the external name)
+
+You can see the generated json here:
+
+    $ less ./target/classes/kubernetes.json
+
+Set the following environment variables:
+
+    export KUBERNETES_TRUST_CERTIFICATES=true
+    export KUBERNETES_MASTER=https://ose31-master.hosts.foo.com:8443
+    export KUBERNETES_NAMESPACE=fabric8
+    export KUBERNETES_DOMAIN=apps.foo.com
+
+Note: **set these variables appropriately for your environment**.
+
+    $ mvn -Pfabric8-snapshot fabric8:apply
+
+    [INFO] Scanning for projects...
+    [INFO]
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Building Fabric8 :: Quickstarts :: Java :: CXF JAX-RS CDI latest
+    [INFO] ------------------------------------------------------------------------
+    [INFO]
+    [INFO] --- fabric8-maven-plugin:2.2.0.redhat-621030:json (default-cli) @ foo ---
+    [INFO] Configured with file: /home/mike/src/fuse-ose3-dr1/test2/foo/target/classes/kubernetes.json
+    2015-11-19 22:19:54 INFO  Version:17 - HV000001: Hibernate Validator 5.2.1.Final
+    [INFO] No environment schemas found for file: io/fabric8/environment/schema.json
+    [INFO] Generated env mappings: {}
+    [INFO] Generated port mappings: {http=ContainerPort(containerPort=9092, hostIP=null, hostPort=null, name=http, protocol=null, additionalProperties={}), metrics=ContainerPort(containerPort=9779, hostIP=null, hostPort=null, name=metrics, protocol=null, additionalProperties={}), jolokia=ContainerPort(containerPort=8778, hostIP=null, hostPort=null, name=jolokia, protocol=null, additionalProperties={})}
+    Generated ports: [ServicePort(name=null, nodePort=null, port=9002, protocol=TCP, targetPort=IntOrString(IntVal=9092, Kind=null, StrVal=null, additionalProperties={}), additionalProperties={})]
+    [INFO] Icon URL: https://cdn.rawgit.com/fabric8io/fabric8/master/fabric8-maven-plugin/src/main/resources/icons/java.svg
+    [INFO]
+    [INFO] --- fabric8-maven-plugin:2.2.0.redhat-621030:apply (default-cli) @ foo ---
+    [INFO] Using kubernetes at: https://ose31-master.hosts.foo.com:8443 in namespace fabric8
+    [INFO] Kubernetes JSON: /home/mike/src/fuse-ose3-dr1/test2/foo/target/classes/kubernetes.json
+    [INFO] Is OpenShift: true
+    [INFO] Creating a namespace fabric8
+    [INFO] Creating a template from kubernetes.json namespace fabric8 name foo
+    [INFO] Created template: target/fabric8/applyJson/fabric8/template-foo-2.json
+    [INFO] Deleting Service: quickstart-java-cxf-cdi
+    [INFO] Creating a service from kubernetes.json namespace fabric8 name quickstart-java-cxf-cdi
+    [INFO] Created service: target/fabric8/applyJson/fabric8/service-quickstart-java-cxf-cdi-2.json
+    [INFO] Creating a replicationController from kubernetes.json namespace fabric8 name foo
+    [INFO] Created replicationController: target/fabric8/applyJson/fabric8/replicationcontroller-foo-2.json
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 7.055 s
+    [INFO] Finished at: 2015-11-19T22:19:58+13:00
+    [INFO] Final Memory: 28M/414M
+    [INFO] ------------------------------------------------------------------------
+
+You can re-create and re-apply the OSE configuration at any time using this command:
+
+    $ mvn -Pfabric8-snapshot fabric8:json fabric8:apply -Dfabric8.dockerPrefix="172.30.234.236:5000/" -Dfabric8.recreate=true -Ddocker.password=$(oc whoami -t)
+
+**Check Success**
+
+You should be able to see a running pod and replicationController
+
+    $ oc get pods
+    NAME        READY     STATUS    RESTARTS   AGE
+    foo-hrefr   1/1       Running   0          1m
+
+    $ oc get rc
+    CONTROLLER   CONTAINER(S)   IMAGE(S)                                 SELECTOR                                                          REPLICAS   AGE
+    foo          foo            172.30.234.236:5000/fabric8/foo:latest   component=foo,container=java,group=quickstarts,provider=fabric8   1          26s
+
+
+You should be able to broswe to the folowing REST service endpoints. Note **replace with your correct domain name here**
+
+    Starting REST server at:         http://quickstart-java-cxf-cdi.apps.foo.com/quickstart-java-cxf-cdi/
+    View the services at:            http://quickstart-java-cxf-cdi.apps.foo.com/quickstart-java-cxf-cdi/cxf/servicesList
+    View an example REST service at: http://quickstart-java-cxf-cdi.apps.foo.com/quickstart-java-cxf-cdi/cxfcdi/customerservice/customers/123
+
+    curl http://quickstart-java-cxf-cdi.apps.foo.com/quickstart-java-cxf-cdi/cxfcdi/customerservice/customers/123
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?><Customer xmlns="http://cxfcdi.fabric.quickstarts.fabric8.io/"><id>123</id><name>John</name></Customer>
+
+##**Summary**##
+
+You have successfully:
+
+- used a java maven archetype to create a REST web service based on apache cxf
+- built a docker image using java maven fabric8 tools
+- deployed the image to the exposed OpenShift registry
+- generated and applied the OpenShift kubernetes configuration to start a pod running your application
+- tested the web service
+
+
+
+
+</xmp>
+
+<script src="http://training.runcloudrun.com/v/0.2/strapdown.js"></script>
