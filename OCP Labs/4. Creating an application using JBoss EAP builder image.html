@@ -13,7 +13,7 @@ If you want to, you can create a new project based on what you have learned in p
 
 **Remember** to replace the username before running the command.
 
-    $ oc new-project myjbossapp-username --display-name="My JBoss Applications" --description="A place for my JBoss EAP Applications"
+    $ oc new-project lab04 --display-name="Lab 04" --description="A place for my JBoss EAP Applications"
 
 
 **Step 2: Create an application that uses the JBoss EAP builder image**
@@ -223,15 +223,15 @@ This step is very much the same as what we did in previous exercises. We will ch
     route "ks" exposed
 
     $ oc get routes
-    NAME      HOST/PORT             PATH      SERVICE   LABELS    INSECURE POLICY   TLS TERMINATION
-    ks        ks-wk1.apps.foo.com             ks        app=ks
+    NAME      HOST/PORT                             PATH      SERVICE   LABELS    INSECURE POLICY   TLS TERMINATION
+    ks        ks-lab04.rhel-cdk.10.1.2.2.xip.io     ks        app=ks
 
 
 **Step 6: Run the application**
 
 Now run the application by using the route you provided in the previous step. You can use either curl or your browser.
 
-    $ curl ks-myjbossapp-UserName.apps.osecloud.com
+    $ curl ks-lab04.rhel-cdk.10.1.2.2.xip.io
     <!-- Plain HTML page that kicks us into the app -->
     <html>
     <head>

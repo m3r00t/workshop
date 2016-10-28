@@ -15,63 +15,49 @@ We will provide a route (a URL) to access the frontend application from a browse
 Based on the experience gained from the previous exercise, log into the OpenShift Web Console.
 You will see the list of Projects.
 
-Using the `New Project` Button, create a new project. I am going to call it "consoleproject-userName".
-Substitute your username to make this project unique. Type in a `Display Name` and `Description` of your choice.
+Using the `New Project` Button, create a new project. I am going to call it "lab05".
+Type in a `Display Name` and `Description` as "Lab 05" and "Using templates" respectively.
 
 Press the `Create` button to complete the project creation from the Web Console. This will accomplish the same job as
 `oc create project` from CLI
 
 
-**Step 2: Create a MYSQL database using the template **
+**Step 2: Create a CakePHP application using the template **
 
 You will be taken to the Select Image or Template page straight away.
 
 ![image](images/application_create_screen.png)
   
-You can use the `Browse` drop down `Database` or `Filter` to select the `mysql-ephemeral` template from the list.
-You will also notice 'mysql-persistent' template. But we will address that in a different lab exercise.
+You can use the `Browse` drop down `Database` or `Filter` to select the `cakephp-my` template from the list.
+You will also notice 'cakephp-mysql-example' template. 
 
-![image](images/mysql_ephemeral_template.png)
+![image](images/cakephp-mysql-example.png)
 
-You will be taken to the mysql ephemeral creation screen. Click edit parameters and edit the values. I am using the values as
-
-* Database Service Name: mysql
-* MySQL User: mysqluser
-* MySQL Password: supersecret
-* MySQL Database: sample
-
-In the next section you can `add` label
-* name=name
-* value=mysql
-
-Click the `Create` button.
+Leave all the setting as default, and click the `Create` button.
 
 You will then be taken back to the project details page and soon you will see an image of a running pod.
 
-![image](images/mysql_pod_on_proj_details.png)
+![image](images/cakephp_mysql_details.png)
 
 Browse over to Pods, Services and Deployments to notice the additions to the project. You will note that the service has been assigned
-an IP address that starts with 172.*. Make a note of that. Also note the port that is exposed by this service. By default it exposes 3306.
+an IP address that starts with 172.*. Make a note of that. Also note the port that is exposed by this service. By default it exposes 3306. 
 
+![image](images/mysql_details.png)
 
-**Step 3: Add data to MySQL database**
+Navigate to the MySQL Pod's Environment to obtain credentials
 
-The quickest way to enter the database pod is to browse to `Pods`, select the mysql pod and enter the terminal:
+![image](images/mysql_env.png)
 
-![image](images/mysql_pod_terminal.png)
-
-We can enter the pod and access the database using the CLI.
-
-From the command line, change the project to the "consoleproject-UserName" using command
+From the command line, change the project to the "lab05" using command
 **Remember** to substitute your username
 
-    oc project consoleproject-username
+    oc project lab05
 
 Based on what you learnt previously get the list of running pods (Tip: `oc get pods`). You will find one pod for mysql running. Note its name.
 
 Enter the pod by running the following command. Substitute the podname with your mysql pod name.
 
-    $ oc rsh mysql-1-aewve
+    $ oc rsh mysql-1-al8v7
     bash-4.2$
 
 You will be taken to a bash prompt inside the running pod. Now using the service ip address you noted earlier, port number, username and password
@@ -79,7 +65,7 @@ you used start the mysql client as shown below. You will have to substitute your
  
 *Tip:* If you need service ip address navigate to `Browse->Services` tab on the Web Console. 
 
-    mysql -h172.30.58.24 -P3306 -umysqluser -psupersecret
+    mysql -h172.17.0.6 -P3306 -ucakephp -pwclRx1xUyrBsuOAS
 
 You will be taken to the `mysql` prompt. See the list of databases. You will notice that the sample database that you requested is added and available.
 
@@ -87,7 +73,7 @@ You will be taken to the `mysql` prompt. See the list of databases. You will not
 
 Change over to use the `sample` database.
 
-    use sample;
+    use default;
 
 Now `show tables` shows an empty set. So let us create a table and add some records using the commands shown below.
 
@@ -122,9 +108,9 @@ You will be taken to the screen where you can edit the template defaults like be
 * Application domain name: dbtest.UserName.apps.osecloud.com **Remember** to substitute username
 * Database Service Name: mysql (this should match the service name for database created earlier)
 * Database Engine: mysql
-* Database Name: sample
-* Database User: mysqluser (the value we set earlier)
-* Database Password: supersecret (the value we set earlier)
+* Database Name: default
+* Database User: cakephp (the value we set earlier)
+* Database Password: wclRx1xUyrBsuOAS (the value we set earlier)
 
 In the next section add a label 
 * name=name

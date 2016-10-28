@@ -12,11 +12,11 @@ In this exercise we will learn how to create an application from a Dockerfile. O
 If you want to, you can create a new project based on what you have learnt in the previous lab. Since we already have a project we will use it. Run the following command to make sure. 
 **Remember** to substitute UserName with your username.
 
-    $ oc project mycliproject-UserName
+    $ oc project lab02 --display-name="Lab 02" --description="Create App Using Docker Build"
 
 **Step 2: Create an application that uses docker file**
 
-This time we will use a project that has a Dockerfile in a source code repository. We will use a simple php project on github (https://github.com/eformat/time).
+This time we will use a project that has a Dockerfile in a source code repository. We will use a simple php project on github (https://github.com/m3r00t/time).
 Look at the Dockerfile for this project. It starts off with a php:5.6-apache image. It copies the source code which is a simple php file and exposes port 80.
 Look at the src folder, you will find a simple time.php files that just displays the current datetime.
 
@@ -26,10 +26,10 @@ Once OpenShift builds the application's docker image, it stores that in a local 
 
 Now let's create an application using this approach. We will run `oc new-app` command by supplying the git uri and correct source directory `sh` as the parameters.
 
-    $ oc new-app https://github.com/eformat/time.git --context-dir=sh
+    $ oc new-app https://github.com/m3r00t/time.git --context-dir=sh
     --> Found Docker image 1c2a1ce (7 days old) from Docker Hub for "library/php:5.6-apache"
         * An image stream will be created as "php:5.6-apache" that will track this image
-        * A Docker build using source code from https://github.com/eformat/time.git will be created
+        * A Docker build using source code from https://github.com/m3r00t/time.git will be created
           * The resulting image will be pushed to image stream "time:latest"
           * Every time "php:5.6-apache" changes a new build will be triggered
         * This image will be deployed in deployment config "time"
@@ -300,7 +300,7 @@ Replace username here. You can use `services` or the shortcut `svc` interchangab
 
     $ oc get routes
     NAME      HOST/PORT                                  PATH      SERVICE   LABELS     TLS TERMINATION
-    time      time-mycliproject-UserName.apps.osecloud.com             time      app=time
+    time      time-lab02.rhel-cdk.10.1.2.2.xip.io        time      app=time
 
 
 **Note:** Unlike in the previous lab, this time I did not use --hostname parameter while exposing the service to create a route.
@@ -311,7 +311,7 @@ OpenShift by default automatically assigned the project name extension to the ro
 
 Now run the application by using the route you provided in the previous step. You can use either curl or your browser. The application displays time.
 
-    $ curl time-mycliproject-UserName.apps.osecloud.com
+    $ curl time-lab02.rhel-cdk.10.1.2.2.xip.io
     Wed Nov 18 07:19:34 UTC 2015
 
 Congratulations!! In this exercise you have learnt how to create, build and deploy an application using OpenShift's "Docker Build strategy".
