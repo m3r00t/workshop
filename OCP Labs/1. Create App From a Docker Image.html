@@ -11,7 +11,7 @@ In this lab you will learn to create a new project and create an application fro
 
 **Note:** Please replace UserName with the username assigned to you in the commands below.
 
-    $ oc new-project mycliproject-UserName --description="My CLI Project" --display-name="CLI Project"
+    $ oc new-project lab01 --display-name="Lab 01" --description="Create App Using Docker Image"
 
 Upon project creation, OpenShift will automatically switch to the newly created project/namespace. If you wish to view the list of projects, run the following command:
 
@@ -22,7 +22,7 @@ If you have more than one project, you can switch to a different one by issuing 
 You can also check the status of the project by running the following command. It says that the project is currently not running anything.
 
     $ oc status
-    In project CLI Project (mycliproject-UserName)
+    In project CLI Project (lab01)
 
     In project CLI Project (wk1) on server https://ose31-master.hosts.foo.com:8443
 
@@ -79,7 +79,7 @@ Now add a route to the service with the following command. `oc expose` command w
 
 **Note**: I am using a domain name of `apps.osecloud.com`. Ask the instructor on the domain name suffix for your setup an change it. 
 
-    $ oc expose service welcome --name=welcome --hostname=welcome.UserName.apps.osecloud.com
+    $ oc expose service welcome --name=welcome 
     NAME      HOST/PORT                     PATH      SERVICE   LABELS
     welcome   welcome.UserName.apps.osecloud.com             welcome
 

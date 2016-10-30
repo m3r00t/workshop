@@ -31,7 +31,6 @@ Navigate to console: http://hexboard-demo.apps.imgv-ltd.co.uk/
 # oc delete pod $(oc get pods | grep ^sketchpod | grep -v build | sed -e "s/^\(sketchpod-[0-9]*-[a-z0-9]*\)[ \t].*/\1 /" | head -n 5 | tr -d "\n" )
 
 
-
 Set winner/hexboard size: 
 # oc env dc/hexboard WINNER_COUNT=1
 # oc env dc/hexboard HEXBOARD_SIZE=tiny
