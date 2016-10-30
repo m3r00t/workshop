@@ -43,11 +43,11 @@ Note we are using the default insecure web port `80`
 As your normal user, you should now be able to login to the exposed OpenShift docker registry. Be sure to **replace** the name of the
 registry and the username, email with your environments:
 
-    $ docker login -u <your username> -e wkshop@foo.com -p `oc whoami -t` docker-registry-default.apps.foo.com
-    WARNING: login credentials saved in /home/mike/.docker/config.json
+    $ docker login -u unused -e unused -p `oc whoami -t` hub.openshift.rhel-cdk.10.1.2.2.xip.io
+    WARNING: login credentials saved in /home/m3r00t/.docker/config.json
     Login Succeeded
 
-We will use this exposed registry route later in this lab `docker-registry-default.apps.foo.com`
+We will use this exposed registry route later in this lab `hub.openshift.rhel-cdk.10.1.2.2.xip.io`
 
 **Create a new project**
 
@@ -57,34 +57,23 @@ Create a new project:
 
 Make a new directory to hold your source code:
 
-    $ mkdir src/foo; cd src/foo;
-
+    $ mkdir fabric8; cd fabric8
 
 **Create a java project from a maven archetype**
 
 We are going to use the cxf cdi archetype:
 
-    $ mvn archetype:generate -DarchetypeCatalog=http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml
-
-    Choose archetype:
-    1: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-cxf-cdi-archetype (Creates a new CXF JAX-RS using CDI running in a standalone Java Container)
-    2: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-simple-fatjar-archetype (Creates a new Simple standalone Java Container (fat jar))
-    3: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-spring-archetype (Creates a new Camel route using Spring XML in a standalone Java container)
-    4: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-cdi-rest-archetype (Creates a new Camel route using CDI in a standalone Java Container as REST client)
-    5: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-simple-mainclass-archetype (Creates a new Simple standalone Java Container (main class))
-    6: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-cdi-archetype (Creates a new Camel route using CDI in a standalone Java Container)
-    7: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:java-camel-cdi-http-archetype (Creates a new Camel route using CDI in a standalone Java Container calling the remote camel-servlet quickstart)
-    8: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:karaf-cxf-rest-archetype (Creates a new RESTful WebService Example using JAX-RS)
-    9: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:karaf-camel-rest-sql-archetype (Creates a new Camel Example using Rest DSL with SQL Database)
-    10: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:karaf-camel-log-archetype (Creates a new Camel Log Example)
-    11: http://origin-repository.jboss.org/nexus/content/groups/ea/io/fabric8/archetypes/archetypes-catalog/2.2.0.redhat-621030/archetypes-catalog-2.2.0.redhat-621030-archetype-catalog.xml -> io.fabric8.archetypes:spring-boot-camel-archetype (Creates a new Shows how to use Camel with Spring Boot in the Java Container)
+    $ mvn archetype:generate \
+      -DarchetypeGroupId=io.fabric8.archetypes \
+      -DarchetypeArtifactId=cdi-camel-archetype \
+      -DarchetypeVersion=2.2.101
 
 Select `1`, hit enter. Fill in properties for your java project. Any values will do.
 
-    Define value for property 'groupId': : com.example
-    Define value for property 'artifactId': : foo
-    Define value for property 'version':  1.0-SNAPSHOT: : latest
-    Define value for property 'package':  com.example: :
+    Define value for property 'groupId': : myf8
+    Define value for property 'artifactId': : cdi-demo
+    Define value for property 'version':  1.0-SNAPSHOT: : 
+    Define value for property 'package':  myf8: :
     [INFO] Using property: fabric8.version = 2.2.0.redhat-621030
     Confirm properties configuration:
     groupId: com.example
@@ -120,34 +109,31 @@ Select `Y`, hit enter.
 
 You should see `BUILD SUCCESS` and generated stub code:
 
-    $ cd foo
-    $ ls
-    pom.xml  README.md  src/
-
-
 **Build the docker image**
 
-    mvn install docker:build -Pfabric8-snapshot -U -DskipTests=true
+    $ cd cdi-demo; mvn install docker:build -Pfabric8-snapshot -U -DskipTests=true
 
 A successful build will deploy the built image to your docker registry:
 
     ...
-    [INFO] Copying files to /home/mike/src/fuse-ose3-dr1/test2/foo/target/docker/docker.io/fabric8/foo/latest/build/maven
-    [INFO] Building tar: /home/mike/src/fuse-ose3-dr1/test2/foo/target/docker/docker.io/fabric8/foo/latest/tmp/docker-build.tar
-    [INFO] DOCKER> [docker.io/fabric8/foo:latest] : Built image f13beae4cc9b
+    [INFO] DOCKER> ... Digest: sha256:956b4946fd29e1509d9307fac1fe62f76131090d5807e1452ae709d3d5f591b7
+    [INFO] DOCKER> ... Status: Downloaded newer image for docker.io/fabric8/s2i-java:1.2
+    [INFO] Copying files to /Workspace/workshop-singapore-scb/workshop/fabric8/cdi-demo/target/docker/fabric8/cdi-demo/1.0-SNAPSHOT/build/maven
+    [INFO] Building tar: /Workspace/workshop-singapore-scb/workshop/fabric8/cdi-demo/target/docker/fabric8/cdi-demo/1.0-SNAPSHOT/tmp/docker-build.tar
+    [INFO] DOCKER> [fabric8/cdi-demo:1.0-SNAPSHOT] : Built image sha256:adab8
     [INFO] ------------------------------------------------------------------------
     [INFO] BUILD SUCCESS
     [INFO] ------------------------------------------------------------------------
-    [INFO] Total time: 01:00 min
-    [INFO] Finished at: 2015-11-19T22:00:12+13:00
-    [INFO] Final Memory: 66M/429M
+    [INFO] Total time: 04:40 min
+    [INFO] Finished at: 2016-10-30T23:52:14+08:00
+    [INFO] Final Memory: 67M/559M
     [INFO] ------------------------------------------------------------------------
 
 You can query the docker registry to see your built image:
 
-    $ docker images docker.io/fabric8/foo
-    REPOSITORY              TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-    docker.io/fabric8/foo   latest              f13beae4cc9b        30 seconds ago      518 MB
+    $ docker images fabric8/cdi-demo
+    REPOSITORY          TAG                 IMAGE ID            CREATED              SIZE
+    fabric8/cdi-demo    1.0-SNAPSHOT        adab8aeb1407        About a minute ago   450.2 MB
 
 
 **Push the built docker image**
@@ -156,32 +142,21 @@ We are now going to push the built docker image from our build registry into Ope
 
 We first have to tag the image so that it matches the expected repository and target namespace
 
-    $ docker tag docker.io/fabric8/foo docker-registry-default.apps.foo.com/fabric8/foo
+    $ docker tag fabric8/cdi-demo:1.0-SNAPSHOT hub.openshift.rhel-cdk.10.1.2.2.xip.io/fabric8/cdi-demo:1.0-SNAPSHOT
 
-Note that the `fabric8` piece matches the OpenShift project namespace and `docker-registry-default.apps.foo.com` matches the
+Note that the `fabric8` piece matches the OpenShift project namespace and `hub.openshift.rhel-cdk.10.1.2.2.xip.io` matches the
 exposed docker registry.
 
 We can now invoke the maven target to push the image. We use out `oc` credentials that are setup when we `oc login`
 
-    $ mvn install docker:push -Pfabric8-snapshot -U -DskipTests=true  -Dfabric8.dockerUser="fabric8/" -Dfabric8.dockerPrefix="docker-registry-default.apps.foo.com/" -Ddocker.username=$(oc whoami) -Ddocker.password=$(oc whoami -t)
+    $ mvn install docker:push -Pfabric8-snapshot -U -DskipTests=true  -Dfabric8.dockerUser="fabric8/" -Dfabric8.dockerPrefix="hub.openshift.rhel-cdk.10.1.2.2.xip.io/" -Ddocker.username=$(oc whoami) -Ddocker.password=$(oc whoami -t)
 
 A successful push looks like this:
 
-    [INFO] DOCKER> ... d184f07ac6fc
-    [INFO] DOCKER> ... 78af4453742e
-    [INFO] DOCKER> ... 1cfae6b9e8a6
-    [INFO] DOCKER> ... 03e674a993ba
-    [INFO] DOCKER> ... 7322fbe74aa5
-    [INFO] DOCKER> ... c852f6d61e65
-    [INFO] DOCKER> ... f1b10cd84249
-    [INFO] DOCKER> ... latest: digest: sha256:bbc3a41b5ad53bc43dca4fcecb4839380d6c72bdc2d351dfccadbfc0051b30fa size: 54367
-    [INFO] ------------------------------------------------------------------------
-    [INFO] BUILD SUCCESS
-    [INFO] ------------------------------------------------------------------------
-    [INFO] Total time: 13.778 s
-    [INFO] Finished at: 2015-11-19T22:02:35+13:00
-    [INFO] Final Memory: 46M/462M
-    [INFO] ------------------------------------------------------------------------
+
+
+
+
 
 
 **Check ImageStream**
