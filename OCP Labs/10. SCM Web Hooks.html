@@ -22,18 +22,18 @@ In Part I of the Lab we will:
 
 **Remember** to substitute the UserName
 
-    $ oc new-project scm-web-hooks-username --display-name="Test WebHooks"
+    $ oc new-project lab10 --display-name="Lab 10" --description="SCM WebHooks"
 
 **Step 2: Create new application and expose a route**
 
 Login to your github account - with your username. Fork the bluegreen repository from the previous lab
 
-    https://github.com/eformat/bluegreen.git
+    https://github.com/m3r00t/bluegreen.git
 
 **Remember** to substitute the UserName
 
     $ oc new-app --image-stream=nodejs --code=https://github.com/<Your Github User Name>/bluegreen.git#master --name=scm-web-hooks
-    $ oc expose service scm-web-hooks --hostname=scm-web-hooks-username.apps.osecloud.com --name=scm-web-hooks
+    $ oc expose service scm-web-hooks --name=scm-web-hooks
 
 
 **Step 3: Look at the created resources**
@@ -70,7 +70,7 @@ Monitor the build
 
 The build should finish with a line similar to:
 
-    I1118 21:08:23.073696       1 sti.go:233] Successfully pushed 172.30.234.236:5000/scm-web-hooks-username/scm-web-hooks:latest
+    I1118 21:08:23.073696       1 sti.go:233] Successfully pushed 172.30.234.236:5000/lab10/scm-web-hooks:latest
 
 
 **Step 4: Test the application**

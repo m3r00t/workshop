@@ -27,9 +27,7 @@ In this Lab, we will be:
 
 **Step 1: Create a new project**
 
-**Remember** to substitute the username
-
-    $ oc new-project bluegreen-username --display-name="Blue Green Project" --description="Blue Green Project"
+    $ oc new-project lab09 --display-name="Lab 09" --description="Blue Green Project"
 
 **Step 2: List existing image builder or image streams**
 
@@ -39,11 +37,11 @@ In this Lab, we will be:
 
 We will be using a sample application that displays a blue or green rectangle.
 
-The sample app can be browsed in https://github.com/eformat/bluegreen.git
+The sample app can be browsed in https://github.com/m3r00t/bluegreen.git
 
 The file where the one-line colour change is performed is here:
 
-    https://github.com/eformat/bluegreen/blob/master/requestHandlers.js
+    https://github.com/m3r00t/bluegreen/blob/master/requestHandlers.js
 
 There are two branches, each with different color settings:
 
@@ -52,7 +50,7 @@ There are two branches, each with different color settings:
 
 Lets create the blue application first
 
-    $ oc new-app --image-stream=nodejs --code=https://github.com/eformat/bluegreen.git#master --name=blue
+    $ oc new-app --image-stream=nodejs --code=https://github.com/m3r00t/bluegreen.git#master --name=blue
 
 
 **Step 4: Monitor the application build**
@@ -61,7 +59,7 @@ Lets create the blue application first
 
 Using the build name of the recently created application run:
 
-    $ oc logs build/"your-build-name"
+    $ oc logs build/blue-1
 
 Once the build finishes you should see something similar to:
 
@@ -88,7 +86,7 @@ Notice that the build pod has exited and you now have a single instance of the a
 
 **Remember** to substitute the username
 
-    $ oc expose service blue --hostname=bluegreen.username.apps.osecloud.com --name=bluegreen
+    $ oc expose service blue --name=bluegreen
 
 **Step 8: Test the application**
 
@@ -114,7 +112,7 @@ In this part, we will:
 
 Repeat steps 3 through 6 from Part I. Make sure to name the application and branch as `green` this time.
 
-    $ oc new-app --image-stream=nodejs --code=https://github.com/eformat/bluegreen.git#green --name=green
+    $ oc new-app --image-stream=nodejs --code=https://github.com/m3r00t/bluegreen.git#green --name=green
 
 Wait until the application is built and deployed. You should now see two services if you run:
 
