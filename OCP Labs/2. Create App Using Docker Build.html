@@ -12,7 +12,7 @@ In this exercise we will learn how to create an application from a Dockerfile. O
 If you want to, you can create a new project based on what you have learnt in the previous lab. Since we already have a project we will use it. Run the following command to make sure. 
 **Remember** to substitute UserName with your username.
 
-    $ oc project lab02 --display-name="Lab 02" --description="Create App Using Docker Build"
+    $ oc new-project lab02 --display-name="Lab 02" --description="Create App Using Docker Build"
 
 **Step 2: Create an application that uses docker file**
 
@@ -103,7 +103,7 @@ In the meanwhile lets have a look at the buildconfig by running the command show
                     "source": {
                         "type": "Git",
                         "git": {
-                            "uri": "https://github.com/eformat/time.git"
+                            "uri": "https://github.com/m3r00t/time.git"
                         }
                     },
                     "strategy": {

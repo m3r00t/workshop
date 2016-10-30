@@ -24,7 +24,7 @@ You can also check the status of the project by running the following command. I
     $ oc status
     In project CLI Project (lab01)
 
-    In project CLI Project (wk1) on server https://ose31-master.hosts.foo.com:8443
+    In project CLI Project (wk1) on server https://127.0.0.1:8443
 
     You have no services, deployment configs, or build configs.
     Run 'oc new-app' to create an application.
@@ -87,7 +87,7 @@ Now add a route to the service with the following command. `oc expose` command w
 
 Access the application: Now access the application using curl or from the browser and see the result
 
-    $ curl http://welcome.UserName.apps.osecloud.com
+    $ curl http://welcome-lab01.rhel-cdk.10.1.2.2.xip.io
     Hello ! Welcome to OpenShift 3
 
 Voila!! you created your first application using an existing docker image on OpenShift. 
