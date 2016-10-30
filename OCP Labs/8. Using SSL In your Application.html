@@ -9,11 +9,11 @@ In this exercise you will set up your application to encrypt traffic with the Op
 
 **Step 1: Switch to an existing project**
 
-For this exercise, we will be using an already running application. We will be using the `myjbossapp-UserName` that you created in the previous labs.
+For this exercise, we will be using an already running application. We will be using the `lab04` that you created in the previous labs.
 Make sure you are switched to that project by using the `oc project` command. **Remember** to substitute UserName
 
 ```
-$ oc project myjbossapp-UserName
+$ oc project lab04
 ```
 
 **Step 2: View the routing config**
@@ -30,12 +30,12 @@ To view the routing config you will need to use the `oc get route` command
       labels:
         app: ks
       name: ks
-      namespace: myjbossapp-username
+      namespace: lab04
       resourceVersion: "138234"
-      selfLink: /oapi/v1/namespaces/myjbossapp-username/routes/ks
+      selfLink: /oapi/v1/namespaces/lab04/routes/ks
       uid: 62daca7c-8e5b-11e5-a2d1-525400b36d1d
     spec:
-      host: ks-myjbossapp-username.apps.foo.com
+      host: ks-lab04.rhel-cdk.10.1.2.2.xip.io
       port:
         targetPort: "8080"
       to:
@@ -70,12 +70,12 @@ You are going to add `tls: termination: edge` right below the `host:` section. I
       labels:
         app: ks
       name: ks
-      namespace: myjbossapp-username
+      namespace: lab04
       resourceVersion: "138234"
-      selfLink: /oapi/v1/namespaces/myjbossapp-username/routes/ks
+      selfLink: /oapi/v1/namespaces/lab04/routes/ks
       uid: 62daca7c-8e5b-11e5-a2d1-525400b36d1d
     spec:
-      host: ks-myjbossapp-username.apps.foo.com
+      host: ks-lab04.rhel-cdk.10.1.2.2.xip.io
       tls:
         termination: edge
       port:
@@ -96,7 +96,7 @@ You can also see this successfully added to the route by running
 
     $ oc get route
     NAME      HOST/PORT                             PATH      SERVICE   LABELS    INSECURE POLICY   TLS TERMINATION
-    ks        ks-myjbossapp-username.apps.foo.com             ks        app=ks                      edge
+    ks        ks-lab04.apps.foo.com             ks        app=ks                      edge
 
 Congratulations!! In this exercise you have learned about service SSL from your application
 
